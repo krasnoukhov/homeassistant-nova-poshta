@@ -10,7 +10,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 import httpx
-from novaposhta.client import NovaPoshtaApi
+from novaposhta.client import NovaPoshtaApi, InvalidAPIKeyError, APIRequestError
 
 from .const import (
     API_KEY,
@@ -27,7 +27,9 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def __init__(self, data: dict[str, Any], hass: HomeAssistant) -> None:
         """Initialize."""
-        self._client = NovaPoshtaApi(data[API_KEY], timeout=HTTP_TIMEOUT)
+        self._client = NovaPoshtaApi(
+            data[API_KEY], timeout=HTTP_TIMEOUT, raise_for_errors=True
+        )
 
         super().__init__(
             hass,
@@ -38,11 +40,13 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _send(self, **kwargs) -> dict[str, Any]:
         try:
-            response = self._client.send(**kwargs)
-            # TODO: check response json
-            return response
+            return self._client.send(**kwargs)
         except httpx.HTTPError as http_error:
             raise ConnectionError from http_error
+        except InvalidAPIKeyError as client_error:
+            raise InvalidAuth from client_error
+        except APIRequestError as client_error:
+            raise ConnectionError from client_error
 
     def _validate(self) -> None:
         """Validate using Nova Poshta API."""
