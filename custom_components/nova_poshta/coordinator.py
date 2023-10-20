@@ -11,6 +11,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 import httpx
 from novaposhta.client import NovaPoshtaApi, InvalidAPIKeyError, APIRequestError
+from transliterate import translit
 
 from .const import (
     API_KEY,
@@ -82,12 +83,23 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return self.data["data"][0]["result"]
 
     @property
-    def warehouses(self) -> list[str]:
-        """Retrieve unique warehouse ids."""
+    def warehouses(self) -> list[dict]:
+        """Retrieve unique warehouses."""
         return list(
             set(
                 map(
-                    lambda x: x["SettlmentAddressData"]["RecipientWarehouseNumber"],
+                    lambda x: frozenset(
+                        {
+                            "id": x["SettlmentAddressData"]["RecipientWarehouseNumber"],
+                            "name": translit(
+                                x["SettlmentAddressData"][
+                                    "RecipientSettlementDescription"
+                                ],
+                                "uk",
+                                reversed=True,
+                            ).replace("Kyyiv", "Kyiv"),
+                        }.items()
+                    ),
                     self.parcels,
                 )
             )

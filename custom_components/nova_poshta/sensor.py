@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 from typing import cast
+from stringcase import snakecase
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -35,8 +36,8 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            NovaPoshtaSensor(coordinator, entry, warehouse_id)
-            for warehouse_id in coordinator.warehouses
+            NovaPoshtaSensor(coordinator, entry, warehouse)
+            for warehouse in coordinator.warehouses
         ]
     )
 
@@ -50,16 +51,17 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
         self,
         coordinator: NovaPoshtaCoordinator,
         entry: ConfigEntry,
-        warehouse_id: str,
+        warehouse: frozenset,
     ) -> None:
         """Initialize a Nova Poshta entity."""
         super().__init__(coordinator)
 
-        self._parcels = self.coordinator.delivered_by_warehouse(warehouse_id)
+        warehouse_info = dict(warehouse)
+        self._parcels = self.coordinator.delivered_by_warehouse(warehouse_info["id"])
 
         self.entity_description = SensorEntityDescription(
-            key=f"delivered_parcels_{warehouse_id}",
-            name=f"Delivered parcels in {warehouse_id}",
+            key=f"delivered_parcels_{snakecase(warehouse_info['name'])}_{warehouse_info['id']}",
+            name=f"Delivered parcels in {warehouse_info['name']}@{warehouse_info['id']}",
             state_class=SensorStateClass.TOTAL,
         )
         self._attr_unique_id = self.entity_description.key
