@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "api_key": "API key"
+        },
+        "description": "You can obtain API key by logging in to [Business cabinet](https://new.novaposhta.ua/dashboard/settings/developers). More info is available on [Developer portal](https://developers.novaposhta.ua). Please be aware that mobile app will likely sign you out after you get a new API key."
+      }
+    },
+    "error": {
+      "already_configured": "Device is already configured",
+      "already_in_progress": "Device configuration is in progress",
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unknown error"
+    }
+  }
+}
