@@ -3,8 +3,6 @@ name: "Auto Release"
 
 on:
   push:
-    branches:
-      - main
     paths:
       - custom_components/*/manifest.json
 
