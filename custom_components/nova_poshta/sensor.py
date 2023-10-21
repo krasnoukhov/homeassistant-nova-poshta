@@ -45,7 +45,7 @@ async def async_setup_entry(
 class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
     """Representation of the Nova Poshta sensor."""
 
-    _parcels: list[dict]
+    _warehouse: dict
 
     def __init__(
         self,
@@ -56,15 +56,18 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
         """Initialize a Nova Poshta entity."""
         super().__init__(coordinator)
 
-        warehouse_info = dict(warehouse)
-        self._parcels = self.coordinator.delivered_by_warehouse(warehouse_info["id"])
-
+        self._warehouse = dict(warehouse)
         self.entity_description = SensorEntityDescription(
-            key=f"delivered_parcels_{snakecase(warehouse_info['name'])}_{warehouse_info['id']}",
-            name=f"Delivered parcels in {warehouse_info['name']}@{warehouse_info['id']}",
+            key=f"delivered_parcels_{snakecase(self._warehouse['name'])}_{self._warehouse['id']}",
+            name=f"Delivered parcels in {self._warehouse['name']}@{self._warehouse['id']}",
             state_class=SensorStateClass.TOTAL,
         )
-        self._attr_unique_id = self.entity_description.key
+        self._attr_unique_id = "-".join(
+            [
+                entry.entry_id,
+                self.entity_description.key,
+            ]
+        )
         self._attr_device_info = DeviceInfo(
             name=entry.title,
             identifiers={(DOMAIN, entry.entry_id)},
@@ -87,3 +90,7 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
                 )
             )
         }
+
+    @property
+    def _parcels(self) -> list[dict]:
+        return self.coordinator.delivered_by_warehouse(self._warehouse["id"])
