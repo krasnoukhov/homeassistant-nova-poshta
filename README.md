@@ -17,6 +17,36 @@ The Nova Poshta integration allows you to track delivered parcels, exposed as se
 
 <img src="https://github.com/krasnoukhov/homeassistant-nova-poshta/assets/944286/ff42b312-6758-4c40-80b3-eed8cdda9596" alt="setup" width="400">
 
+## Example automation
+
+Here's what I use to get a notification when there's a parcel in poshtomat and I'm approaching home:
+
+```yml
+alias: Poshtomat
+trigger:
+  - platform: state
+    entity_id:
+      - person.krasnoukhov
+    to: home
+condition:
+  - condition: numeric_state
+    entity_id: sensor.dmytro_delivered_parcels_in_kyiv_XXXX
+    above: 0
+action:
+  - alias: Send critical mobile app notification
+    service: notify.mobile_app_dmytro_iphone
+    data:
+      data:
+        push:
+          sound:
+            critical: 1
+      title: >
+        Посилки в поштоматі: {{ states("sensor.dmytro_delivered_parcels_in_kyiv_XXXX") }}шт
+      message: >
+        {{ state_attr("sensor.dmytro_delivered_parcels_in_kyiv_XXXX", "parcels") | join("\n") }}
+mode: single
+```
+
 ## Installation
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
