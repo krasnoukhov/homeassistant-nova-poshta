@@ -83,9 +83,9 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, str] | None:
         """Return the state attributes."""
         return {
-            "parcels": "\n\n".join(
+            "parcels": list(
                 map(
-                    lambda x: f"{x['CargoDescription']}\n{x['CounterpartySenderDescription']}",
+                    lambda x: f"{x['CargoDescription']} - {x['CounterpartySenderDescription']}",
                     self._parcels,
                 )
             )
