@@ -61,6 +61,7 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
             key=f"delivered_parcels_{snakecase(self._warehouse['name'])}_{self._warehouse['id']}",
             name=f"Delivered parcels in {self._warehouse['name']}@{self._warehouse['id']}",
             state_class=SensorStateClass.TOTAL,
+            icon="mdi:package-down",
         )
         self._attr_unique_id = "-".join(
             [
