@@ -24,10 +24,10 @@ Here's what I use to get a notification when there's a parcel in poshtomat and I
 ```yml
 alias: Poshtomat
 trigger:
-  - platform: state
-    entity_id:
-      - person.krasnoukhov
-    to: home
+  - platform: zone
+    entity_id: person.krasnoukhov
+    zone: zone.home
+    event: enter
 condition:
   - condition: numeric_state
     entity_id: sensor.dmytro_delivered_parcels_in_kyiv_XXXX
@@ -40,6 +40,7 @@ action:
         push:
           sound:
             critical: 1
+            name: default
       title: >
         Посилки в поштоматі: {{ states("sensor.dmytro_delivered_parcels_in_kyiv_XXXX") }}шт
       message: >
