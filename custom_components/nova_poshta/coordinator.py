@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import timedelta, date
 import logging
-from typing import Any
+from typing import Callable, Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -39,9 +39,9 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=timedelta(seconds=UPDATE_INTERVAL),
         )
 
-    def _send(self, **kwargs) -> dict[str, Any]:
+    def _send(self, client_lambda: Callable[[Any], Any]) -> dict[str, Any]:
         try:
-            return self._client.send(**kwargs)
+            return client_lambda()
         except httpx.HTTPError as http_error:
             raise ConnectionError from http_error
         except InvalidAPIKeyError as client_error:
@@ -51,7 +51,7 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _validate(self) -> None:
         """Validate using Nova Poshta API."""
-        self._send(model_name="Common", api_method="getCargoTypes", method_props={})
+        return self._send(self._client.common.get_cargo_types)
 
     async def async_validate_input(self) -> None:
         """Validate Nova Poshta component."""
@@ -62,13 +62,11 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         try:
             today = date.today()
             return self._send(
-                model_name="InternetDocument",
-                api_method="getIncomingDocumentsByPhone",
-                method_props={
-                    "DateFrom": f"{(today - timedelta(days=14)).strftime('%d.%m.%Y')} 00:00:00",
-                    "DateTo": f"{(today + timedelta(days=1)).strftime('%d.%m.%Y')} 00:00:00",
-                    "Limit": 100,
-                },
+                lambda: self._client.internet_document.get_incoming_documents_by_phone(
+                    date_from=f"{(today - timedelta(days=14)).strftime('%d.%m.%Y')} 00:00:00",
+                    date_to=f"{(today + timedelta(days=1)).strftime('%d.%m.%Y')} 00:00:00",
+                    limit=100,
+                )
             )
         except ConnectionError as http_error:
             raise UpdateFailed from http_error
