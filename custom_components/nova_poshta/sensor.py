@@ -2,6 +2,7 @@
 
 The sensor component creates multipe sensors regarding Nova Poshta status.
 """
+
 from __future__ import annotations
 
 import logging
