@@ -1,4 +1,5 @@
 """The Nova Poshta integration."""
+
 from __future__ import annotations
 
 import logging
@@ -26,7 +27,6 @@ async def update_listener(hass, entry):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Nova Poshta from a config entry."""
-    _LOGGER.debug(f"Nova Poshta entry data: {entry.data}")
 
     coordinator = NovaPoshtaCoordinator(
         entry.data,

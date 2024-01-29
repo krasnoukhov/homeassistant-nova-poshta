@@ -1,4 +1,5 @@
 """Constants for the Nova Poshta integration."""
+
 from homeassistant.const import CONF_API_KEY
 
 DOMAIN = "nova_poshta"
