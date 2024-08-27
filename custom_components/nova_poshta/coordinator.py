@@ -12,7 +12,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 import httpx
 from novaposhta.client import NovaPoshtaApi, InvalidAPIKeyError, APIRequestError
-from transliterate import translit
+from translitua import translit, UkrainianSimple
 
 from .const import (
     API_KEY,
@@ -94,8 +94,7 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                                 x["SettlmentAddressData"][
                                     "RecipientSettlementDescription"
                                 ],
-                                "uk",
-                                reversed=True,
+                                UkrainianSimple,
                             ).replace("Kyyiv", "Kyiv"),
                         }.items()
                     ),
