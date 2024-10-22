@@ -84,6 +84,7 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @property
     def warehouses(self) -> list[dict]:
         """Retrieve unique warehouses."""
+        # _LOGGER.debug(f"Parcels: {self.parcels}")
         return list(
             set(
                 map(
@@ -91,9 +92,12 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         {
                             "id": x["SettlmentAddressData"]["RecipientWarehouseNumber"],
                             "name": translit(
-                                x["SettlmentAddressData"][
-                                    "RecipientSettlementDescription"
-                                ],
+                                (
+                                    x["CityRecipientDescription"]
+                                    or x["SettlmentAddressData"][
+                                        "RecipientSettlementDescription"
+                                    ]
+                                ),
                                 UkrainianSimple,
                             ).replace("Kyyiv", "Kyiv"),
                         }.items()
