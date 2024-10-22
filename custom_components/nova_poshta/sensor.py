@@ -58,9 +58,10 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
         super().__init__(coordinator)
 
         self._warehouse = dict(warehouse)
+        sep = "@" if self._warehouse["id"] else ""
         self.entity_description = SensorEntityDescription(
             key=f"delivered_parcels_{snakecase(self._warehouse['name'])}_{self._warehouse['id']}",
-            name=f"Delivered parcels in {self._warehouse['name']}@{self._warehouse['id']}",
+            name=f"Delivered parcels in {self._warehouse['name']}{sep}{self._warehouse['id']}",
             state_class=SensorStateClass.TOTAL,
             icon="mdi:package-down",
         )
