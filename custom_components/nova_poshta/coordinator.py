@@ -30,7 +30,7 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def __init__(self, data: dict[str, Any], hass: HomeAssistant) -> None:
         """Initialize."""
         self._client = NovaPoshtaApi(
-            data[API_KEY], timeout=HTTP_TIMEOUT, raise_for_errors=True
+            data[API_KEY], timeout=HTTP_TIMEOUT, async_mode=True, raise_for_errors=True
         )
 
         super().__init__(
@@ -40,9 +40,14 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=timedelta(seconds=UPDATE_INTERVAL),
         )
 
-    def _send(self, client_lambda: Callable[[Any], Any]) -> dict[str, Any]:
+    async def async_shutdown(self) -> None:
+        """Close the client."""
+        await super().async_shutdown()
+        await self._client.close_async()
+
+    async def _send(self, client_lambda: Callable[[Any], Any]) -> dict[str, Any]:
         try:
-            return client_lambda()
+            return await client_lambda()
         except httpx.HTTPError as http_error:
             raise ConnectionError from http_error
         except InvalidAPIKeyError as client_error:
@@ -50,21 +55,17 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except APIRequestError as client_error:
             raise ConnectionError from client_error
 
-    def _validate(self) -> None:
-        """Validate using Nova Poshta API."""
-        return self._send(self._client.common.get_cargo_types)
-
     async def async_validate_input(self) -> None:
         """Validate Nova Poshta component."""
-        return await self.hass.async_add_executor_job(self._validate)
+        return await self._send(self._client.common.get_cargo_types)
 
-    def _get_data(self) -> dict[str, Any]:
+    async def _get_data(self) -> dict[str, Any]:
         """Get new sensor data for Nova Poshta component."""
         try:
             today = date.today()
-            return self._send(
+            return await self._send(
                 lambda: self._client.internet_document.get_incoming_documents_by_phone(
-                    date_from=f"{(today - timedelta(days=14)).strftime('%d.%m.%Y')} 00:00:00",
+                    date_from=f"{(today - timedelta(days=180)).strftime('%d.%m.%Y')} 00:00:00",
                     date_to=f"{(today + timedelta(days=1)).strftime('%d.%m.%Y')} 00:00:00",
                     limit=100,
                 )
@@ -74,7 +75,7 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Get new sensor data for Nova Poshta component."""
-        return await self.hass.async_add_executor_job(self._get_data)
+        return await self._get_data()
 
     @property
     def parcels(self) -> list[dict]:
@@ -84,7 +85,7 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @property
     def warehouses(self) -> list[dict]:
         """Retrieve unique warehouses."""
-        # _LOGGER.debug(f"Parcels: {self.parcels}")
+        # _LOGGER.debug(f"Parcels ({len(self.parcels)}): {self.parcels}")
         return list(
             set(
                 map(
