@@ -35,12 +35,24 @@ async def async_setup_entry(
     """Create Nova Poshta sensor entities in HASS."""
     coordinator: NovaPoshtaCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    async_add_entities(
-        [
-            NovaPoshtaSensor(coordinator, entry, warehouse)
-            for warehouse in coordinator.warehouses
-        ]
-    )
+    known_warehouses: set[frozenset] = set()
+
+    def _check_warehouses() -> None:
+        current_warehouses = set(coordinator.warehouses)
+        new_warehouses = current_warehouses - known_warehouses
+
+        # _LOGGER.debug(f"New warehouses: {new_warehouses}")
+        if new_warehouses:
+            known_warehouses.update(new_warehouses)
+            async_add_entities(
+                [
+                    NovaPoshtaSensor(coordinator, entry, warehouse)
+                    for warehouse in new_warehouses
+                ]
+            )
+
+    _check_warehouses()
+    entry.async_on_unload(coordinator.async_add_listener(_check_warehouses))
 
 
 class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
