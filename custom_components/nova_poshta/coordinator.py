@@ -112,8 +112,8 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Retrieve delivered parcels for the warehouse id."""
         delivered = list(
             filter(
-                lambda x: x["TrackingStatusCode"] == "7"
-                or x["TrackingStatusCode"] == "8",
+                lambda x: x["TypeOfDocument"] == "Incoming" and (x["TrackingStatusCode"] == "7"
+                or x["TrackingStatusCode"] == "8"),
                 self.parcels,
             )
         )
