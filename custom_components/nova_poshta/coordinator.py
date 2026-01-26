@@ -9,6 +9,7 @@ from typing import Callable, Any
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.httpx_client import get_async_client
 
 import httpx
 from novaposhta.client import NovaPoshtaApi, InvalidAPIKeyError, APIRequestError
@@ -23,14 +24,20 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+class AsyncHttpClientWrapper:
+    def __init__(self, client):
+        self._client = client
+    def AsyncClient(self, *args, **kwargs):
+        return self._client
 
 class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Nova Poshta Coordinator class."""
 
     def __init__(self, data: dict[str, Any], hass: HomeAssistant) -> None:
         """Initialize."""
+        async_http_client = AsyncHttpClientWrapper(get_async_client(hass))
         self._client = NovaPoshtaApi(
-            data[API_KEY], timeout=HTTP_TIMEOUT, async_mode=True, raise_for_errors=True
+            data[API_KEY], timeout=HTTP_TIMEOUT, async_mode=True, raise_for_errors=True, http_client=async_http_client
         )
 
         super().__init__(
