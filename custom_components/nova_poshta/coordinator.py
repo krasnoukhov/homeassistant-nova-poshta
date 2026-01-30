@@ -24,11 +24,6 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-class AsyncHttpClientWrapper:
-    def __init__(self, client):
-        self._client = client
-    def AsyncClient(self, *args, **kwargs):
-        return self._client
 
 class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Nova Poshta Coordinator class."""
@@ -37,7 +32,11 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Initialize."""
         async_http_client = AsyncHttpClientWrapper(get_async_client(hass))
         self._client = NovaPoshtaApi(
-            data[API_KEY], timeout=HTTP_TIMEOUT, async_mode=True, raise_for_errors=True, http_client=async_http_client
+            data[API_KEY],
+            timeout=HTTP_TIMEOUT,
+            async_mode=True,
+            raise_for_errors=True,
+            http_client=async_http_client,
         )
 
         super().__init__(
@@ -131,6 +130,14 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 delivered,
             )
         )
+
+
+class AsyncHttpClientWrapper:
+    def __init__(self, client):
+        self._client = client
+
+    def AsyncClient(self, *args, **kwargs):
+        return self._client
 
 
 class InvalidAuth(HomeAssistantError):
