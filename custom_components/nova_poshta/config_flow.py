@@ -46,9 +46,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
+        description_placeholders = {
+            "cabinet_url": "https://new.novaposhta.ua/dashboard/settings/developers",
+            "developer_url": "https://developers.novaposhta.ua",
+        }
+
         if user_input is None:
             return self.async_show_form(
-                step_id="user", data_schema=USER_SCHEMA, errors={}
+                step_id="user",
+                data_schema=USER_SCHEMA,
+                errors={},
+                description_placeholders=description_placeholders,
             )
 
         errors = {}
@@ -72,5 +80,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         data_schema = self.add_suggested_values_to_schema(USER_SCHEMA, user_input)
         return self.async_show_form(
-            step_id="user", data_schema=data_schema, errors=errors
+            step_id="user",
+            data_schema=data_schema,
+            errors=errors,
+            description_placeholders=description_placeholders,
         )
