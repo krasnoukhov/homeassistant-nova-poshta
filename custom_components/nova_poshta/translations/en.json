@@ -9,8 +9,8 @@
       }
     },
     "error": {
-      "already_configured": "Device is already configured",
-      "already_in_progress": "Device configuration is in progress",
+      "already_configured": "Service is already configured",
+      "already_in_progress": "Service configuration is in progress",
       "cannot_connect": "Failed to connect",
       "invalid_auth": "Invalid authentication",
       "unknown": "Unknown error"
