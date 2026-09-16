@@ -118,16 +118,28 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Retrieve delivered parcels for the warehouse id."""
         delivered = list(
             filter(
-                lambda x: x["TypeOfDocument"] == "Incoming"
+                lambda x: (x["TypeOfDocument"] == "Incoming" or x["OwnerDocumentType"])
                 and (x["TrackingStatusCode"] == "7" or x["TrackingStatusCode"] == "8"),
                 self.parcels,
+            )
+        )
+        # A redirect or a return to sender opens a second waybill for the same
+        # parcel, and Nova Poshta types it by who ordered the service ("Outgoing")
+        # rather than by where the parcel is going -- hence OwnerDocumentType above.
+        # Both waybills can sit at 7/8 at once, so keep only the leg that is live:
+        # a document naming a successor that is itself in the list is superseded.
+        numbers = set(map(lambda x: x["Number"], delivered))
+        latest = list(
+            filter(
+                lambda x: not any(ew["Number"] in numbers for ew in x["LinkedEWs"]),
+                delivered,
             )
         )
         return list(
             filter(
                 lambda x: x["SettlmentAddressData"]["RecipientWarehouseNumber"]
                 == warehouse_id,
-                delivered,
+                latest,
             )
         )
 
