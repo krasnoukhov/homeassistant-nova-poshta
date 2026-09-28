@@ -55,11 +55,13 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         try:
             return await client_lambda()
         except httpx.HTTPError as http_error:
-            raise ConnectionError from http_error
+            raise ConnectionError(
+                f"{type(http_error).__name__}: {http_error}"
+            ) from http_error
         except InvalidAPIKeyError as client_error:
             raise InvalidAuth from client_error
         except APIRequestError as client_error:
-            raise ConnectionError from client_error
+            raise ConnectionError(f"API error: {client_error}") from client_error
 
     async def async_validate_input(self) -> None:
         """Validate Nova Poshta component."""
@@ -77,7 +79,7 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 )
             )
         except ConnectionError as http_error:
-            raise UpdateFailed from http_error
+            raise UpdateFailed(str(http_error)) from http_error
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Get new sensor data for Nova Poshta component."""
