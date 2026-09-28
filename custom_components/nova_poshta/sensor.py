@@ -6,8 +6,8 @@ The sensor component creates multipe sensors regarding Nova Poshta status.
 from __future__ import annotations
 
 import logging
+import re
 from typing import cast
-from stringcase import snakecase
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -27,6 +27,19 @@ from .coordinator import NovaPoshtaCoordinator
 from .entity import NovaPoshtaEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def snakecase(string: str) -> str:
+    """Snake-case a warehouse name exactly as stringcase 1.2.0 did.
+
+    The result is part of the sensor's unique ID, so it must not change.
+    """
+    string = re.sub(r"[\-\.\s]", "_", str(string))
+    if not string:
+        return string
+    return string[0].lower() + re.sub(
+        r"[A-Z]", lambda matched: "_" + matched.group(0).lower(), string[1:]
+    )
 
 
 async def async_setup_entry(
