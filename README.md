@@ -41,12 +41,24 @@ action:
           sound:
             critical: 1
             name: default
+        url: https://novapost.com/mobileapp/
       title: >
         Посилки в поштоматі: {{ states("sensor.dmytro_delivered_parcels_in_kyiv_XXXX") }}шт
       message: >
         {{ state_attr("sensor.dmytro_delivered_parcels_in_kyiv_XXXX", "parcels") | join("\n") }}
 mode: single
 ```
+
+The `url` is what makes the notification open the Nova Post app when tapped on iOS. It has
+to be an `https://` universal link: the companion app doesn't hand custom schemes off to
+iOS, so `novapost://` silently does nothing
+([home-assistant/iOS#4822](https://github.com/home-assistant/iOS/issues/4822)).
+`https://novapost.com/mobileapp/` is claimed by the app's
+[association file](https://novapost.com/.well-known/apple-app-site-association), so iOS
+hands it to the app rather than opening the web page.
+
+This also depends on the companion app's **Open links in** setting being Safari — with the
+in-app browser, the link stays inside Home Assistant and the app never opens.
 
 ## Installation
 
