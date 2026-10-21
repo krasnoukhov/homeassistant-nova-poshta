@@ -16,6 +16,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -23,10 +24,42 @@ from homeassistant.helpers.typing import StateType
 from .const import (
     DOMAIN,
 )
-from .coordinator import NovaPoshtaCoordinator
+from .coordinator import NovaPoshtaCoordinator, place_name
 from .entity import NovaPoshtaEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _key(warehouse: dict) -> str:
+    return f"delivered_parcels_{snakecase(warehouse['name'])}_{warehouse['id']}"
+
+
+def _unique_id(entry: ConfigEntry, warehouse: dict) -> str:
+    return f"{entry.entry_id}-{_key(warehouse)}"
+
+
+def _remove_untracked(
+    hass: HomeAssistant, entry: ConfigEntry, coordinator: NovaPoshtaCoordinator
+) -> None:
+    """Remove sensors of warehouses outside the tracked settlements."""
+    tracked = {_unique_id(entry, dict(w)) for w in coordinator.warehouses}
+    # Older sensors have no parcels to tell their settlement by; the unique id
+    # only has the name, so keep those whose name is a tracked settlement's.
+    prefixes = [
+        _unique_id(entry, {"name": place_name(name), "id": ""})
+        for name in coordinator.settlements.values()
+    ]
+
+    registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
+        unique_id = entity.unique_id
+        if unique_id in tracked or any(
+            unique_id.startswith(prefix) and "_" not in unique_id[len(prefix) :]
+            for prefix in prefixes
+        ):
+            continue
+        _LOGGER.debug("Removing %s, outside the tracked settlements", entity.entity_id)
+        registry.async_remove(entity.entity_id)
 
 
 async def async_setup_entry(
@@ -34,6 +67,9 @@ async def async_setup_entry(
 ) -> None:
     """Create Nova Poshta sensor entities in HASS."""
     coordinator: NovaPoshtaCoordinator = hass.data[DOMAIN][entry.entry_id]
+
+    if coordinator.settlements:
+        _remove_untracked(hass, entry, coordinator)
 
     known_warehouses: set[frozenset] = set()
 
@@ -72,17 +108,12 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
         self._warehouse = dict(warehouse)
         sep = "@" if self._warehouse["id"] else ""
         self.entity_description = SensorEntityDescription(
-            key=f"delivered_parcels_{snakecase(self._warehouse['name'])}_{self._warehouse['id']}",
+            key=_key(self._warehouse),
             name=f"Delivered parcels in {self._warehouse['name']}{sep}{self._warehouse['id']}",
             state_class=SensorStateClass.TOTAL,
             icon="mdi:package-down",
         )
-        self._attr_unique_id = "-".join(
-            [
-                entry.entry_id,
-                self.entity_description.key,
-            ]
-        )
+        self._attr_unique_id = _unique_id(entry, self._warehouse)
         self._attr_device_info = DeviceInfo(
             name=entry.title,
             identifiers={(DOMAIN, entry.entry_id)},
@@ -108,4 +139,4 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
 
     @property
     def _parcels(self) -> list[dict]:
-        return self.coordinator.delivered_by_warehouse(self._warehouse["id"])
+        return self.coordinator.delivered_by_warehouse(self._warehouse)

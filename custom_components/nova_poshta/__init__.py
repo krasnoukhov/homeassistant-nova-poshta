@@ -11,6 +11,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .coordinator import InvalidAuth, NovaPoshtaCoordinator
 from .const import (
+    CONF_SETTLEMENTS,
     DOMAIN,
 )
 
@@ -21,8 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def update_listener(hass, entry):
     """Handle options update."""
-    coordinator: NovaPoshtaCoordinator = hass.data[DOMAIN][entry.entry_id]
-    await coordinator.async_request_refresh()
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -31,6 +31,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = NovaPoshtaCoordinator(
         entry.data,
         hass,
+        entry.options.get(CONF_SETTLEMENTS),
     )
 
     try:

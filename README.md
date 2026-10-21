@@ -9,6 +9,13 @@ The Nova Poshta integration allows you to track delivered parcels, exposed as se
 - Supports multiple warehouses (post office, poshtomat, different cities)
 - Separate integration for every person in the household
 
+### Track only some settlements
+
+Using one account in several homes? Pick the settlements each Home Assistant tracks, at setup
+or later under **Configure**. Warehouses elsewhere get no sensors, and existing sensors for them
+are deleted. The list offers settlements your parcels went to; to add another, type its name in
+Ukrainian (e.g. `Київ`). Pick none to track everything.
+
 <img src="https://github.com/krasnoukhov/homeassistant-nova-poshta/assets/944286/9d41505b-087b-49b1-ad63-c84401096459" alt="sensors" width="400">
 <br>
 <img src="https://github.com/krasnoukhov/homeassistant-nova-poshta/assets/944286/c88a9f39-d2a3-441e-a501-c0223a0cc9b5" alt="sensors" width="400">
@@ -75,3 +82,11 @@ in-app browser, the link stays inside Home Assistant and the app never opens.
 
 * Copy the entire `custom_components/nova_poshta/` directory to your server's `<config>/custom_components` directory
 * Restart Home Assistant
+
+## Development
+
+```sh
+uv venv --python 3.14
+uv pip install -r requirements_test.txt
+.venv/bin/pytest
+```

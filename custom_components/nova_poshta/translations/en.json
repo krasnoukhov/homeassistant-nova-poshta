@@ -6,6 +6,24 @@
           "api_key": "API key"
         },
         "description": "You can obtain API key by logging in to [Business cabinet]({cabinet_url}). More info is available on [Developer portal]({developer_url}). Please be aware that mobile app will likely sign you out after you get a new API key."
+      },
+      "settlements": {
+        "title": "Settlements",
+        "description": "Pick the settlements whose warehouses to track; sensors for other settlements are deleted. Pick none to track all of them.",
+        "data": {
+          "settlements": "Settlements",
+          "search": "Add a settlement"
+        },
+        "data_description": {
+          "search": "Type its name in Ukrainian, e.g. Київ, and submit to search."
+        }
+      },
+      "search": {
+        "title": "Add settlements",
+        "description": "Pick the settlements to add.",
+        "data": {
+          "settlements": "Settlements found"
+        }
       }
     },
     "error": {
@@ -13,7 +31,34 @@
       "already_in_progress": "Service configuration is in progress",
       "cannot_connect": "Failed to connect",
       "invalid_auth": "Invalid authentication",
-      "unknown": "Unknown error"
+      "unknown": "Unknown error",
+      "no_results": "Nothing found. Type the name in Ukrainian, e.g. Київ."
+    }
+  },
+  "options": {
+    "step": {
+      "settlements": {
+        "title": "Settlements",
+        "description": "Pick the settlements whose warehouses to track; sensors for other settlements are deleted. Pick none to track all of them.",
+        "data": {
+          "settlements": "Settlements",
+          "search": "Add a settlement"
+        },
+        "data_description": {
+          "search": "Type its name in Ukrainian, e.g. Київ, and submit to search."
+        }
+      },
+      "search": {
+        "title": "Add settlements",
+        "description": "Pick the settlements to add.",
+        "data": {
+          "settlements": "Settlements found"
+        }
+      }
+    },
+    "error": {
+      "no_results": "Nothing found. Type the name in Ukrainian, e.g. Київ.",
+      "cannot_connect": "Failed to connect"
     }
   }
 }
