@@ -9,3 +9,11 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+  # Keeps tests on a current Home Assistant. The rest of requirements_test.txt
+  # follows manifest.json, which Dependabot doesn't read.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-name: "pytest-homeassistant-custom-component"
