@@ -46,11 +46,6 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=timedelta(seconds=UPDATE_INTERVAL),
         )
 
-    async def async_shutdown(self) -> None:
-        """Close the client."""
-        await super().async_shutdown()
-        await self._client.close_async()
-
     async def _send(self, client_lambda: Callable[[Any], Any]) -> dict[str, Any]:
         try:
             return await client_lambda()
