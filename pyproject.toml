@@ -21,8 +21,8 @@ lint = ["ruff==0.16.0"]
 package = false
 
 [tool.ruff]
-# Syntax must still parse on older HA installs
-target-version = "py311"
+# Must not exceed the Python of the minimum HA in hacs.json
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
