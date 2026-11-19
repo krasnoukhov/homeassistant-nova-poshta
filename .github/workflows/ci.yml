@@ -7,16 +7,18 @@ on:
   pull_request:
 
 jobs:
-  black:
-    name: Python Code Format Check
+  ruff:
+    name: Ruff
     runs-on: ubuntu-latest
     steps:
       - name: Check out code from GitHub
-        uses: "actions/checkout@main"
-      - name: Black Code Format Check
-        uses: lgeiger/black-action@master
-        with:
-          args: ". --check --fast --diff"
+        uses: actions/checkout@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.3
+      - name: Check formatting
+        run: uv run --locked --only-group lint ruff format --check --diff
+      - name: Lint
+        run: uv run --locked --only-group lint ruff check --output-format=github
 
   validate:
     name: Check hassfest
@@ -36,8 +38,6 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v10.3.3
       - name: Install dependencies
-        run: |
-          uv venv --python 3.14
-          uv pip install -r requirements_test.txt
+        run: uv sync --locked
       - name: Run tests
-        run: .venv/bin/pytest
+        run: uv run pytest

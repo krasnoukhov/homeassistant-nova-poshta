@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import timedelta, date
+from collections.abc import Callable
+from datetime import date, timedelta
 import logging
-from typing import Callable, Any
+from typing import Any
+
+import httpx
+from novaposhta.client import APIRequestError, InvalidAPIKeyError, NovaPoshtaApi
+from translitua import UkrainianSimple, translit
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.httpx_client import get_async_client
-
-import httpx
-from novaposhta.client import NovaPoshtaApi, InvalidAPIKeyError, APIRequestError
-from translitua import translit, UkrainianSimple
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
     API_KEY,
@@ -139,9 +140,11 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 map(
                     lambda x: frozenset(warehouse_of(x).items()),
                     filter(
-                        lambda x: not self.settlements
-                        or x["SettlmentAddressData"]["RecipientSettlementRef"]
-                        in self.settlements,
+                        lambda x: (
+                            not self.settlements
+                            or x["SettlmentAddressData"]["RecipientSettlementRef"]
+                            in self.settlements
+                        ),
                         self.parcels,
                     ),
                 )
@@ -152,8 +155,12 @@ class NovaPoshtaCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Retrieve delivered parcels for the warehouse."""
         delivered = list(
             filter(
-                lambda x: (x["TypeOfDocument"] == "Incoming" or x["OwnerDocumentType"])
-                and (x["TrackingStatusCode"] == "7" or x["TrackingStatusCode"] == "8"),
+                lambda x: (
+                    (x["TypeOfDocument"] == "Incoming" or x["OwnerDocumentType"])
+                    and (
+                        x["TrackingStatusCode"] == "7" or x["TrackingStatusCode"] == "8"
+                    )
+                ),
                 self.parcels,
             )
         )

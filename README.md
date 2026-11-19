@@ -86,7 +86,7 @@ in-app browser, the link stays inside Home Assistant and the app never opens.
 ## Development
 
 ```sh
-uv venv --python 3.14
-uv pip install -r requirements_test.txt
-.venv/bin/pytest
+uv run pytest
+uv run ruff format
+uv run ruff check --fix
 ```

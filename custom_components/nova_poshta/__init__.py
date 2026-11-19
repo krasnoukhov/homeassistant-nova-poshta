@@ -9,11 +9,11 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .coordinator import InvalidAuth, NovaPoshtaCoordinator
 from .const import (
     CONF_SETTLEMENTS,
     DOMAIN,
 )
+from .coordinator import InvalidAuth, NovaPoshtaCoordinator
 
 PLATFORMS = [Platform.SENSOR]
 
