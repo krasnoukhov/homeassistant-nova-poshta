@@ -144,7 +144,9 @@ class NovaPoshtaSensor(NovaPoshtaEntity, SensorEntity):
         return {
             "parcels": list(
                 map(
-                    lambda x: f"{x['CargoDescription']} - {x['CounterpartySenderDescription']}",
+                    lambda x: (
+                        f"{x['CargoDescription']} - {x['CounterpartySenderDescription']}"
+                    ),
                     self._parcels,
                 )
             )
