@@ -15,7 +15,7 @@ dev = [
   { include-group = "lint" },
   "pytest-homeassistant-custom-component==0.13.375",
 ]
-lint = ["ruff==0.17.5"]
+lint = ["ruff==0.17.6"]
 
 [tool.uv]
 package = false
